@@ -33,19 +33,19 @@ namespace ExchangeAPI.CustomExceptionMiddleware
             catch (ArgumentException ex)
             {
                 msg = "Currency not implemented in our exchange.";
-                _logger.LogError(msg);
+                _logger.LogError(msg + DateTime.Now.ToString());
                 await HandleExceptionAsync(httpContext, ex, HttpStatusCode.NotFound, msg);
             }
             catch (WebException ex)
             {
                 msg = "One of our providers is not available.";
-                _logger.LogError(msg);
+                _logger.LogError(msg + DateTime.Now.ToString());
                 await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadGateway, msg);
             }
             catch (Exception ex)
             {
                 msg = "There was a server error.";
-                _logger.LogError(msg);
+                _logger.LogError(msg + DateTime.Now.ToString());
                 await HandleExceptionAsync(httpContext, ex, HttpStatusCode.InternalServerError, msg);
             }
         }
