@@ -20,23 +20,14 @@ namespace ExchangeAPI
             _config = config;
         }
 
-        public async Task<decimal> GetExchangeRate(string currency)
+        public async Task<decimal> GetExchangeRate(Currencies currency)
         {
-            try
+            switch (currency)
             {
-                var currencyEnum = (Currencies)Enum.Parse(typeof(Currencies), currency);
-
-                switch (currencyEnum)
-                {
-                    case Currencies.BRL:
-                        return await GetRealRate();
-                    default:
-                        return await GetDollarRate();
-                }
-            }
-            catch
-            {
-                throw new InvalidEnumArgumentException();
+                case Currencies.BRL:
+                    return await GetRealRate();
+                default:
+                    return await GetDollarRate();
             }
         }
 

@@ -8,6 +8,6 @@ namespace ExchangeAPI.Services.Interfaces
 {
     interface IBankService
     {
-        Task<decimal> GetExchangeRate(string currency);
+        Task<decimal> GetExchangeRate(Currencies currency);
     }
 }

@@ -32,74 +32,40 @@ namespace ExchangeAPI.Controllers
         [HttpGet("rate/{currency}")]
         public async Task<ActionResult<decimal>> Get(string currency)
         {
-            try
-            {
-                return await _service.GetExchangeRate(currency);
-            }
-            catch (Exception ex)
-            {
-                return ErrorHandling(ex);
-            }
+            var currencyEnum = (Currencies)Enum.Parse(typeof(Currencies), currency);
+
+            return await _service.GetExchangeRate(currencyEnum);
         }
 
         [HttpPost("purchase")]
         public async Task<ActionResult> Post(TransactionCreationDTO transactionUser)
         {
-            try
+            var today = DateTime.Today;
+            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+            var transaction = new Transaction()
             {
-                var today = DateTime.Today;
-                var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
-                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+                UserId = transactionUser.UserId,
+                Currency = (Currencies)Enum.Parse(typeof(Currencies), transactionUser.Currency),
+                Date = DateTime.Today
+            };
 
-                var transaction = new Transaction()
-                {
-                    UserId = transactionUser.UserId,
-                    AmountPruchased = transactionUser.AmountInPesos / await _service.GetExchangeRate(transactionUser.Currency),
-                    Currency = (Currencies)Enum.Parse(typeof(Currencies), transactionUser.Currency),
-                    Date = DateTime.Today
-                };
+            transaction.AmountPruchased = transactionUser.AmountInPesos / await _service.GetExchangeRate(transaction.Currency);
 
-                var amountInMonth = await _context.Transaccions.Where(t => firstDayOfMonth <= t.Date && t.Date <= lastDayOfMonth && t.Currency == transaction.Currency).SumAsync(c => c.AmountPruchased);
+            var amountInMonth = await _context.Transaccions.Where(t => firstDayOfMonth <= t.Date && t.Date <= lastDayOfMonth && t.Currency == transaction.Currency).SumAsync(c => c.AmountPruchased);
 
-                if ((transaction.Currency == Currencies.USD && amountInMonth + transaction.AmountPruchased <= 200) || (transaction.Currency == Currencies.BRL && amountInMonth + transaction.AmountPruchased <= 300))
-                {
-                    _context.Add(transaction);
-                    await _context.SaveChangesAsync();
-
-                    return Ok(transaction);
-                }
-                else
-                {
-                    return StatusCode(403, new { message = "You exceded your purchase limit in this currency" });
-                }
-            }
-            catch (Exception ex)
+            if ((transaction.Currency == Currencies.USD && amountInMonth + transaction.AmountPruchased <= 200) || (transaction.Currency == Currencies.BRL && amountInMonth + transaction.AmountPruchased <= 300))
             {
-                return ErrorHandling(ex);
-            }
-        }
+                _context.Add(transaction);
+                await _context.SaveChangesAsync();
 
-        private ObjectResult ErrorHandling(Exception ex)
-        {
-            string errMsg;
-            int statusCode = 500;
-
-            if (ex is ArgumentException || ex is InvalidEnumArgumentException)
-            {
-                errMsg = "Currency not implemented in our exchange";
-                statusCode = 404;
-            }
-            else if (ex is WebException)
-            {
-                errMsg = "One of our providers is not working";
+                return Ok(transaction);
             }
             else
             {
-                errMsg = "There was a server error";
+                return StatusCode(403, new { message = "You exceded your purchase limit in this currency" });
             }
-
-            _logger.LogInformation(errMsg);
-            return StatusCode(statusCode, new { message = errMsg + ". " + DateTime.Now.ToString() });
         }
     }
 }

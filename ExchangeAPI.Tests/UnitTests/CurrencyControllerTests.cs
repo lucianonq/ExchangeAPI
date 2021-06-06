@@ -24,7 +24,7 @@ namespace ExchangeAPI.Tests.UnitTests
             var config = BuildConfig();
             var service = new BankService(config);
 
-            var valueOfUSD = await service.GetExchangeRate("USD");
+            var valueOfUSD = await service.GetExchangeRate(Currencies.USD);
 
             var controller = new CurrencyController(context, config, logger);
             var answer = await controller.Get("USD");
@@ -41,12 +41,12 @@ namespace ExchangeAPI.Tests.UnitTests
             var config = BuildConfig();
             var service = new BankService(config);
 
-            var valueOfUSD = await service.GetExchangeRate("BRL");
+            var valueOfBRL = await service.GetExchangeRate(Currencies.BRL);
 
             var controller = new CurrencyController(context, config, logger);
             var answer = await controller.Get("BRL");
 
-            Assert.AreEqual(valueOfUSD, answer.Value);
+            Assert.AreEqual(valueOfBRL, answer.Value);
         }
 
         [TestMethod]
@@ -58,9 +58,10 @@ namespace ExchangeAPI.Tests.UnitTests
             var config = BuildConfig();
 
             var controller = new CurrencyController(context, config, logger);
-            var answer = await controller.Get("AUD");
 
-            Assert.AreEqual(404, ((ObjectResult)answer.Result).StatusCode);
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => 
+                controller.Get("AUD")
+            );
         }
 
         [TestMethod]
