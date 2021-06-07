@@ -1,13 +1,7 @@
-﻿using ExchangeAPI.Controllers;
+﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExchangeAPI.Tests
 {
@@ -31,13 +25,6 @@ namespace ExchangeAPI.Tests
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(myConfiguration).Build();
 
             return configuration;
-        }
-
-        protected ILogger<CurrencyController> BuildLogger()
-        {
-            var logger = Mock.Of<ILogger<CurrencyController>>();
-
-            return logger;
         }
     }
 }

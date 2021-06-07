@@ -1,10 +1,4 @@
-﻿using ExchangeAPI.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ExchangeAPI.DTOs
+﻿namespace ExchangeAPI.DTOs
 {
     public class TransactionCreationDTO
     {

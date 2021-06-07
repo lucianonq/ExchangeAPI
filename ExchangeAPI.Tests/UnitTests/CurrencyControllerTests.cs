@@ -1,13 +1,10 @@
 ﻿using ExchangeAPI.Controllers;
 using ExchangeAPI.DTOs;
 using ExchangeAPI.Entities;
-using FluentAssertions;
+using ExchangeAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ExchangeAPI.Tests.UnitTests
@@ -20,13 +17,13 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
             var service = new BankService(config);
 
-            var valueOfUSD = await service.GetExchangeRate(Currencies.USD);
+            var valueOfUSD = await service.GetExchangeRate("USD");
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var answer = await controller.Get("USD");
 
             Assert.AreEqual(valueOfUSD, answer.Value);
@@ -37,13 +34,13 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
             var service = new BankService(config);
 
-            var valueOfBRL = await service.GetExchangeRate(Currencies.BRL);
+            var valueOfBRL = await service.GetExchangeRate("BRL");
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var answer = await controller.Get("BRL");
 
             Assert.AreEqual(valueOfBRL, answer.Value);
@@ -54,10 +51,11 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
+            var service = new BankService(config);
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
 
             await Assert.ThrowsExceptionAsync<ArgumentException>(() => 
                 controller.Get("AUD")
@@ -69,10 +67,10 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var tranDTO = new TransactionCreationDTO() { UserId = "test", AmountInPesos = 10000, Currency = "USD" };
             var answer = await controller.Post(tranDTO);
 
@@ -84,14 +82,14 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var tranDTO = new TransactionCreationDTO() { UserId = "test", AmountInPesos = 22000, Currency = "USD" };
-            var answer = await controller.Post(tranDTO);
 
-            Assert.AreEqual(403, ((ObjectResult)answer).StatusCode);
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+               controller.Post(tranDTO));
         }
 
         [TestMethod]
@@ -99,17 +97,17 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
 
             context.Transaccions.Add(new Transaction() { Currency = Currencies.USD, AmountPruchased = 199, Date = DateTime.Now, UserId = "test" });
             await context.SaveChangesAsync();
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var tranDTO = new TransactionCreationDTO() { UserId = "test", AmountInPesos = 1000, Currency = "USD" };
-            var answer = await controller.Post(tranDTO);
 
-            Assert.AreEqual(403, ((ObjectResult)answer).StatusCode);
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+               controller.Post(tranDTO));
         }
 
         [TestMethod]
@@ -117,10 +115,10 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var tranDTO = new TransactionCreationDTO() { UserId = "test", AmountInPesos = 5000, Currency = "BRL" };
             var answer = await controller.Post(tranDTO);
 
@@ -132,14 +130,14 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var tranDTO = new TransactionCreationDTO() { UserId = "test", AmountInPesos = 10000, Currency = "BRL" };
-            var answer = await controller.Post(tranDTO);
 
-            Assert.AreEqual(403, ((ObjectResult)answer).StatusCode);
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+               controller.Post(tranDTO));
         }
 
         [TestMethod]
@@ -147,17 +145,17 @@ namespace ExchangeAPI.Tests.UnitTests
         {
             var dbName = Guid.NewGuid().ToString();
             var context = BuildContext(dbName);
-            var logger = BuildLogger();
             var config = BuildConfig();
+            var tranService = new TransactionService(context, config);
 
             context.Transaccions.Add(new Transaction() { Currency = Currencies.BRL, AmountPruchased = 299, Date = DateTime.Now, UserId = "test" });
             await context.SaveChangesAsync();
 
-            var controller = new CurrencyController(context, config, logger);
+            var controller = new CurrencyController(context, config, tranService);
             var tranDTO = new TransactionCreationDTO() { UserId = "test", AmountInPesos = 1000, Currency = "BRL" };
-            var answer = await controller.Post(tranDTO);
 
-            Assert.AreEqual(403, ((ObjectResult)answer).StatusCode);
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+               controller.Post(tranDTO));
         }
     }
 }

@@ -1,13 +1,9 @@
-﻿using ExchangeAPI.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace ExchangeAPI.Services.Interfaces
 {
-    interface IBankService
+    public interface IBankService
     {
-        Task<decimal> GetExchangeRate(Currencies currency);
+        Task<decimal> GetExchangeRate(string currency);
     }
 }

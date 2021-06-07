@@ -3,9 +3,7 @@ using ExchangeAPI.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -13,21 +11,25 @@ namespace ExchangeAPI
 {
     public class BankService : IBankService
     {
-        private readonly IConfiguration _config;
+        private IConfiguration _config;
 
         public BankService(IConfiguration config)
         {
             _config = config;
         }
 
-        public async Task<decimal> GetExchangeRate(Currencies currency)
+        public async Task<decimal> GetExchangeRate(string currency)
         {
-            switch (currency)
+            var currencyEnum = (Currencies)Enum.Parse(typeof(Currencies), currency);
+
+            switch (currencyEnum)
             {
                 case Currencies.BRL:
                     return await GetRealRate();
-                default:
+                case Currencies.USD:
                     return await GetDollarRate();
+                default:
+                    throw new InvalidEnumArgumentException();
             }
         }
 

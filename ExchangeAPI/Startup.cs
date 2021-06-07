@@ -1,4 +1,8 @@
+using ExchangeAPI.DAOs;
+using ExchangeAPI.DAOs.Interfaces;
 using ExchangeAPI.Helpers;
+using ExchangeAPI.Services;
+using ExchangeAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;

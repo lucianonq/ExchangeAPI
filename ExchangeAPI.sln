@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeAPI", "ExchangeAPI\ExchangeAPI.csproj", "{EF16CC8C-3876-46AA-B694-FE54C19E7B1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExchangeAPI.Tests", "ExchangeAPI.Tests\ExchangeAPI.Tests.csproj", "{4E5C496E-6D62-401E-A508-8F2E9E9FC01F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExchangeAPI.Tests", "ExchangeAPI.Tests\ExchangeAPI.Tests.csproj", "{4E5C496E-6D62-401E-A508-8F2E9E9FC01F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

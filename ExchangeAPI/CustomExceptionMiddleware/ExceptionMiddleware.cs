@@ -3,9 +3,6 @@ using ExchangeAPI.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -24,34 +21,31 @@ namespace ExchangeAPI.CustomExceptionMiddleware
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
-            string msg = "";
-
             try
             {
                 await _next(httpContext);
             }
-            catch (ArgumentException ex)
-            {
-                msg = "Currency not implemented in our exchange.";
-                _logger.LogError(msg + DateTime.Now.ToString());
-                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.NotFound, msg);
-            }
             catch (WebException ex)
             {
-                msg = "One of our providers is not available.";
-                _logger.LogError(msg + DateTime.Now.ToString());
-                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadGateway, msg);
+                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadGateway, "One of our providers is not available.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.BadRequest, "You execeded you month limit.");
+            }
+            catch (ArgumentException ex)
+            {
+                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.NotFound, "Currency not implemented in our exchange.");
             }
             catch (Exception ex)
             {
-                msg = "There was a server error.";
-                _logger.LogError(msg + DateTime.Now.ToString());
-                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.InternalServerError, msg);
+                await HandleExceptionAsync(httpContext, ex, HttpStatusCode.InternalServerError, "There was a server error.");
             }
         }
 
         private Task HandleExceptionAsync(HttpContext context, Exception exception, HttpStatusCode status, string message)
         {
+            _logger.LogError(exception.Message + ". " + DateTime.Now.ToString());
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)status;
             return context.Response.WriteAsync(new ErrorDetails()
